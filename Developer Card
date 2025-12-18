@@ -1,0 +1,85 @@
+function DeveloperCard({ developer }) {
+    const { status, sold_percent, risk_assessment, selling_pattern } = developer;
+
+    return (
+        <div className={`card developer-card ${status.sentiment.toLowerCase()}`}>
+            <div className="card-header">
+                <h3>👨‍💻 Developer Status</h3>
+                <span className={`status-badge ${status.sentiment.toLowerCase()}`}>
+                    {status.emoji} {status.label}
+                </span>
+            </div>
+
+            <div className="card-body">
+                {/* Selling Progress Bar */}
+                <div className="sell-progress">
+                    <div className="progress-label">
+                        <span>Tokens Sold</span>
+                        <span className="progress-percent">{sold_percent.toFixed(1)}%</span>
+                    </div>
+                    <div className="progress-bar">
+                        <div 
+                            className="progress-fill"
+                            style={{ 
+                                width: `${sold_percent}%`,
+                                backgroundColor: this.getProgressColor(sold_percent)
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* Status Description */}
+                <div className="status-description">
+                    <p>{status.description}</p>
+                </div>
+
+                {/* Risk Assessment */}
+                <div className="risk-box">
+                    <div className="risk-header">
+                        <span className="risk-label">Rug Risk:</span>
+                        <span className={`risk-value ${risk_assessment.rug_risk.toLowerCase().replace(' ', '-')}`}>
+                            {risk_assessment.rug_risk}
+                        </span>
+                    </div>
+                    <p className="risk-reasoning">{risk_assessment.reasoning}</p>
+                    <div className="score-impact">
+                        <span>Safety Score Impact:</span>
+                        <span className={`impact-value ${risk_assessment.score_impact >= 0 ? 'positive' : 'negative'}`}>
+                            {risk_assessment.score_impact >= 0 ? '+' : ''}{risk_assessment.score_impact} points
+                        </span>
+                    </div>
+                </div>
+
+                {/* Selling Pattern */}
+                <div className="pattern-box">
+                    <div className="pattern-header">
+                        <span>Selling Pattern:</span>
+                        <span className={`pattern-type ${selling_pattern.risk.toLowerCase()}`}>
+                            {selling_pattern.type.replace(/_/g, ' ')}
+                        </span>
+                    </div>
+                    <p>{selling_pattern.description}</p>
+                </div>
+
+                {/* Dev Wallet */}
+                <div className="wallet-info">
+                    <span className="wallet-label">Developer Wallet:</span>
+                    <code className="wallet-address">
+                        {developer.wallet.substring(0, 8)}...{developer.wallet.substring(developer.wallet.length - 8)}
+                    </code>
+                    <button className="copy-btn" onClick={() => navigator.clipboard.writeText(developer.wallet)}>
+                        📋
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    getProgressColor(percent) {
+        if (percent > 90) return '#10b981'; // green - good
+        if (percent > 70) return '#84cc16'; // lime
+        if (percent > 50) return '#fbbf24'; // yellow
+        if (percent > 20) return '#f97316'; // orange
+        return '#ef4444'; // red - bad
+    }
+}
