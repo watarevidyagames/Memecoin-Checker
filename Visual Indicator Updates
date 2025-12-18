@@ -1,0 +1,38 @@
+// Component to display dev status
+function DeveloperStatus({ devData }) {
+    const { status, sold_percent, risk_assessment } = devData;
+    
+    return (
+        <div className={`dev-status ${status.sentiment.toLowerCase()}`}>
+            <div className="status-header">
+                <span className="emoji">{status.emoji}</span>
+                <h3>{status.label}</h3>
+                <span className={`impact ${risk_assessment.score_impact > 0 ? 'positive' : 'negative'}`}>
+                    {risk_assessment.score_impact > 0 ? '+' : ''}{risk_assessment.score_impact} points
+                </span>
+            </div>
+            
+            <div className="status-details">
+                <p>{status.description}</p>
+                
+                <div className="sell-meter">
+                    <div className="meter-bar">
+                        <div 
+                            className="meter-fill"
+                            style={{ width: `${sold_percent}%` }}
+                        />
+                    </div>
+                    <span className="meter-label">
+                        {sold_percent.toFixed(1)}% sold
+                    </span>
+                </div>
+                
+                <div className="risk-badge">
+                    <strong>Rug Risk:</strong> {risk_assessment.rug_risk}
+                </div>
+                
+                <p className="reasoning">{risk_assessment.reasoning}</p>
+            </div>
+        </div>
+    );
+}
