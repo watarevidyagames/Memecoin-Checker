@@ -1,0 +1,96 @@
+function HolderDistribution({ holders }) {
+    return (
+        <div className="card holders-card">
+            <div className="card-header">
+                <h3>👥 Holder Distribution</h3>
+            </div>
+
+            <div className="card-body">
+                {/* Key Metrics */}
+                <div className="metrics-grid">
+                    <div className="metric">
+                        <span className="metric-label">Total Holders</span>
+                        <span className="metric-value">{holders.total_holders}</span>
+                    </div>
+                    <div className="metric">
+                        <span className="metric-label">Unique Buyers</span>
+                        <span className="metric-value">{holders.unique_buyers}</span>
+                    </div>
+                </div>
+
+                {/* Top 10 Concentration */}
+                <div className="concentration-section">
+                    <div className="concentration-header">
+                        <span>Top 10 Holders Control</span>
+                        <span className={`concentration-value ${this.getConcentrationClass(holders.top_10_percent)}`}>
+                            {holders.top_10_percent.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div className="concentration-bar">
+                        <div 
+                            className="concentration-fill"
+                            style={{ 
+                                width: `${holders.top_10_percent}%`,
+                                backgroundColor: this.getConcentrationColor(holders.top_10_percent)
+                            }}
+                        />
+                    </div>
+                    <div className="concentration-legend">
+                        <span>0%</span>
+                        <span className="legend-marker" style={{left: '30%'}}>Good (&lt;30%)</span>
+                        <span className="legend-marker" style={{left: '50%'}}>Risky (&gt;50%)</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+
+                {/* CEX Funding Ratio */}
+                <div className="cex-funding">
+                    <div className="funding-header">
+                        <span>CEX-Funded Wallets</span>
+                        <span className="funding-value">{holders.cex_funded_percent.toFixed(1)}%</span>
+                    </div>
+                    <div className="funding-bar">
+                        <div 
+                            className="funding-fill cex"
+                            style={{ width: `${holders.cex_funded_percent}%` }}
+                        />
+                        <div 
+                            className="funding-fill non-cex"
+                            style={{ width: `${100 - holders.cex_funded_percent}%` }}
+                        />
+                    </div>
+                    <div className="funding-legend">
+                        <div className="legend-item">
+                            <span className="legend-color cex"></span>
+                            <span>CEX-funded (Organic)</span>
+                        </div>
+                        <div className="legend-item">
+                            <span className="legend-color non-cex"></span>
+                            <span>Other sources</span>
+                        </div>
+                    </div>
+                    <p className="funding-note">
+                        {holders.cex_funded_percent > 60 ? 
+                            '✅ High organic distribution from centralized exchanges' :
+                            '⚠️ Low CEX funding may indicate coordinated wallets'
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
+    getConcentrationClass(percent) {
+        if (percent > 60) return 'critical';
+        if (percent > 40) return 'high';
+        if (percent > 30) return 'medium';
+        return 'low';
+    }
+
+    getConcentrationColor(percent) {
+        if (percent > 60) return '#ef4444';
+        if (percent > 40) return '#f97316';
+        if (percent > 30) return '#fbbf24';
+        return '#10b981';
+    }
+}
