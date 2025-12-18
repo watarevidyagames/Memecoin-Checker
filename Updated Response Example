@@ -1,0 +1,187 @@
+const UPDATED_RESPONSE = {
+    safety: {
+        score: 78, // Higher score because dev is out
+        rating: {
+            level: "LOW RISK",
+            color: "green",
+            emoji: "✅",
+            description: "Good safety profile with minor concerns"
+        },
+        
+        deductions: [
+            {
+                reason: "Developer has exited - no future rug risk",
+                points: +15, // POSITIVE
+                severity: "POSITIVE",
+                category: "DEVELOPER"
+            },
+            {
+                reason: "Raydium LP burned (liquidity locked)",
+                points: +15,
+                severity: "POSITIVE",
+                category: "LIQUIDITY"
+            },
+            {
+                reason: "High CEX-funded ratio (65% - organic)",
+                points: +10,
+                severity: "POSITIVE",
+                category: "DISTRIBUTION"
+            },
+            {
+                reason: "Top 10 holders control >40%",
+                points: -15,
+                severity: "MEDIUM",
+                category: "HOLDERS"
+            },
+            {
+                reason: "Minor cluster detected (8.5%)",
+                points: -5,
+                severity: "LOW",
+                category: "CLUSTERS"
+            }
+        ],
+        
+        breakdown: {
+            DEVELOPER: {
+                total_impact: +15,
+                items: [
+                    {
+                        reason: "Developer has exited - no future rug risk",
+                        points: +15,
+                        severity: "POSITIVE"
+                    }
+                ]
+            },
+            HOLDERS: {
+                total_impact: -15,
+                items: [
+                    {
+                        reason: "Top 10 holders control >40%",
+                        points: -15,
+                        severity: "MEDIUM"
+                    }
+                ]
+            },
+            LIQUIDITY: {
+                total_impact: +15,
+                items: [
+                    {
+                        reason: "Raydium LP burned (liquidity locked)",
+                        points: +15,
+                        severity: "POSITIVE"
+                    }
+                ]
+            },
+            DISTRIBUTION: {
+                total_impact: +10,
+                items: [
+                    {
+                        reason: "High CEX-funded ratio (65% - organic)",
+                        points: +10,
+                        severity: "POSITIVE"
+                    }
+                ]
+            },
+            CLUSTERS: {
+                total_impact: -5,
+                items: [
+                    {
+                        reason: "Minor cluster detected (8.5%)",
+                        points: -5,
+                        severity: "LOW"
+                    }
+                ]
+            }
+        },
+        
+        checks: {
+            developer: {
+                wallet: "DevWallet123...",
+                initial_holdings_percent: 5.2,
+                current_holdings_percent: 0.1,
+                sold_percent: 98.1,
+                
+                selling_pattern: {
+                    type: "GRADUAL",
+                    risk: "LOW",
+                    description: "Gradual selling over time"
+                },
+                
+                status: {
+                    label: "DEV OUT",
+                    sentiment: "BULLISH",
+                    emoji: "✅",
+                    description: "Developer has exited - no future rug risk"
+                },
+                
+                risk_assessment: {
+                    rug_risk: "NONE",
+                    score_impact: +15,
+                    reasoning: "No dev tokens left to dump"
+                }
+            },
+            
+            holders: {
+                total_holders: 342,
+                top_10_percent: 41.5,
+                cex_funded_percent: 65,
+                unique_buyers: 287
+            },
+            
+            clusters: {
+                suspicious_clusters: 1,
+                total_cluster_percent: 8.5,
+                details: [
+                    {
+                        cluster_id: "CLUSTER_001",
+                        wallets: 5,
+                        holdings: "8.5%",
+                        confidence: 0.72
+                    }
+                ]
+            },
+            
+            liquidity: {
+                is_graduated: true,
+                raydium_lp_burned: true,
+                liquidity_usd: 67000
+            },
+            
+            trading: {
+                bundled_launch: false,
+                wash_trading_score: 0.15,
+                volume_24h: 185000,
+                volume_to_mcap_ratio: 1.8
+            },
+            
+            token_info: {
+                created_at: 1734345600000, // 7 days ago
+                market_cap: 102000
+            }
+        }
+    },
+    
+    summary: {
+        verdict: "LOW RISK - GOOD ENTRY",
+        key_points: [
+            "✅ Developer fully exited - NO RUG RISK",
+            "✅ Raydium LP burned - liquidity locked",
+            "✅ Strong organic distribution (65% CEX-funded)",
+            "✅ Good liquidity ($67k)",
+            "✅ Established token (7 days old)",
+            "⚠️ Top 10 holders control 41.5% (monitor for sells)",
+            "⚠️ Small insider cluster detected (8.5%)",
+            "📊 Strong technical setup with multiple buy signals"
+        ],
+        recommendation: "Good risk/reward setup. Dev exit removes major risk factor. Consider entry with standard position sizing.",
+        primary_risks: [
+            "Holder concentration",
+            "Small insider cluster"
+        ],
+        primary_strengths: [
+            "Dev fully out",
+            "LP burned",
+            "Organic distribution"
+        ]
+    }
+};
