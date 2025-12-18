@@ -1,0 +1,69 @@
+function SafetyScoreCard({ safety }) {
+    return (
+        <div className="card safety-card">
+            <div className="card-header">
+                <h3>Safety Analysis</h3>
+                <span className={`rating-badge ${safety.rating.color}`}>
+                    {safety.rating.emoji} {safety.rating.level}
+                </span>
+            </div>
+
+            <div className="card-body">
+                {/* Score Breakdown by Category */}
+                <div className="category-breakdown">
+                    {Object.entries(safety.breakdown).map(([category, data]) => (
+                        <div key={category} className="category-item">
+                            <div className="category-header">
+                                <span className="category-name">
+                                    {this.getCategoryIcon(category)} {category}
+                                </span>
+                                <span className={`category-impact ${data.total_impact >= 0 ? 'positive' : 'negative'}`}>
+                                    {data.total_impact >= 0 ? '+' : ''}{data.total_impact}
+                                </span>
+                            </div>
+                            <div className="category-items">
+                                {data.items.map((item, idx) => (
+                                    <div key={idx} className={`detail-item ${item.severity.toLowerCase()}`}>
+                                        <span className="detail-icon">
+                                            {this.getSeverityIcon(item.severity)}
+                                        </span>
+                                        <span className="detail-text">{item.reason}</span>
+                                        <span className="detail-points">
+                                            {item.points >= 0 ? '+' : ''}{item.points}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
+    getCategoryIcon(category) {
+        const icons = {
+            DEVELOPER: '👨‍💻',
+            HOLDERS: '👥',
+            CLUSTERS: '🔗',
+            LIQUIDITY: '💧',
+            DISTRIBUTION: '📊',
+            TRADING: '📈',
+            LAUNCH: '🚀',
+            AGE: '⏰'
+        };
+        return icons[category] || '•';
+    }
+
+    getSeverityIcon(severity) {
+        const icons = {
+            POSITIVE: '✅',
+            CRITICAL: '🚨',
+            HIGH: '⚠️',
+            MEDIUM: '⚠️',
+            LOW: 'ℹ️',
+            NEGATIVE: '❌'
+        };
+        return icons[severity] || '•';
+    }
+}
