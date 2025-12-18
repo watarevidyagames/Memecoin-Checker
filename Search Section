@@ -1,0 +1,43 @@
+function SearchSection({ tokenAddress, setTokenAddress, onAnalyze, loading }) {
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !loading) {
+            onAnalyze();
+        }
+    };
+
+    return (
+        <div className="search-section">
+            <div className="search-container">
+                <input
+                    type="text"
+                    className="token-input"
+                    placeholder="Paste Solana token address (e.g., 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU)"
+                    value={tokenAddress}
+                    onChange={(e) => setTokenAddress(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                />
+                <button 
+                    className="analyze-button"
+                    onClick={onAnalyze}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <>
+                            <span className="spinner"></span>
+                            Analyzing...
+                        </>
+                    ) : (
+                        <>
+                            <span className="icon">🔍</span>
+                            Analyze Token
+                        </>
+                    )}
+                </button>
+            </div>
+            <div className="quick-tips">
+                <span className="tip">💡 Tip: Works with pump.fun and Raydium tokens</span>
+            </div>
+        </div>
+    );
+}
