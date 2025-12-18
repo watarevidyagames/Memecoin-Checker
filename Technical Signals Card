@@ -1,0 +1,60 @@
+function TechnicalSignals({ signals }) {
+    const { overall, all_signals, bullish_score, bearish_score } = signals;
+
+    return (
+        <div className="card signals-card">
+            <div className="card-header">
+                <h3>📊 Technical Signals</h3>
+                <span className={`overall-signal ${overall.color}`}>
+                    {overall.action}
+                </span>
+            </div>
+
+            <div className="card-body">
+                {/* Score Summary */}
+                <div className="signal-summary">
+                    <div className="score-bars">
+                        <div className="score-bar bullish">
+                            <span className="bar-label">Bullish</span>
+                            <div className="bar-container">
+                                <div 
+                                    className="bar-fill"
+                                    style={{ width: `${(bullish_score / (bullish_score + bearish_score)) * 100}%` }}
+                                />
+                            </div>
+                            <span className="bar-value">{bullish_score.toFixed(1)}</span>
+                        </div>
+                        <div className="score-bar bearish">
+                            <span className="bar-label">Bearish</span>
+                            <div className="bar-container">
+                                <div 
+                                    className="bar-fill"
+                                    style={{ width: `${(bearish_score / (bullish_score + bearish_score)) * 100}%` }}
+                                />
+                            </div>
+                            <span className="bar-value">{bearish_score.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Individual Signals */}
+                <div className="signals-list">
+                    {all_signals.map((signal, idx) => (
+                        <div key={idx} className={`signal-item ${signal.signal.toLowerCase()}`}>
+                            <div className="signal-header">
+                                <span className="signal-icon">
+                                    {signal.signal === 'BUY' ? '📈' : '📉'}
+                                </span>
+                                <span className="signal-indicator">{signal.indicator}</span>
+                                <span className={`signal-badge ${signal.strength.toLowerCase()}`}>
+                                    {signal.strength}
+                                </span>
+                            </div>
+                            <p className="signal-reason">{signal.reason}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
