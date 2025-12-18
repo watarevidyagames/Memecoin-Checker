@@ -1,0 +1,185 @@
+class SafetyAnalyzer {
+    
+    async analyzeDeveloper(tokenAddress) {
+        const devWallet = await this.identifyDevWallet(tokenAddress);
+        
+        if (!devWallet) {
+            return {
+                status: "UNKNOWN",
+                risk: "MEDIUM",
+                message: "Cannot identify developer wallet"
+            };
+        }
+        
+        const devHoldings = await this.getDevHoldings(devWallet, tokenAddress);
+        const devTrades = await this.getDevTrades(devWallet, tokenAddress);
+        
+        // Calculate dev behavior metrics
+        const initialHoldings = devTrades,[object Object],?.amount || 0;
+        const currentHoldings = devHoldings.amount;
+        const soldPercent = ((initialHoldings - currentHoldings) / initialHoldings) * 100;
+        
+        // Analyze selling pattern
+        const sellingPattern = this.analyzeSellingPattern(devTrades);
+        
+        return {
+            wallet: devWallet,
+            initial_holdings_percent: (initialHoldings / await this.getTotalSupply(tokenAddress)) * 100,
+            current_holdings_percent: (currentHoldings / await this.getTotalSupply(tokenAddress)) * 100,
+            sold_percent: soldPercent,
+            selling_pattern: sellingPattern,
+            status: this.determineDevStatus(soldPercent, sellingPattern),
+            risk_assessment: this.assessDevRisk(soldPercent, sellingPattern)
+        };
+    }
+    
+    determineDevStatus(soldPercent, pattern) {
+        // Dev sold everything = BULLISH (no rug risk)
+        if (soldPercent > 95) {
+            return {
+                label: "DEV OUT",
+                sentiment: "BULLISH",
+                emoji: "✅",
+                description: "Developer has exited - no future rug risk"
+            };
+        }
+        
+        // Dev sold majority gradually = NEUTRAL to BULLISH
+        if (soldPercent > 70 && pattern.type === "GRADUAL") {
+            return {
+                label: "MOSTLY OUT",
+                sentiment: "NEUTRAL_BULLISH",
+                emoji: "✅",
+                description: "Developer mostly out with gradual selling"
+            };
+        }
+        
+        // Dev sold some but still holds significant = DEPENDS
+        if (soldPercent > 30 && soldPercent <= 70) {
+            return {
+                label: "PARTIAL SELL",
+                sentiment: "NEUTRAL",
+                emoji: "⚠️",
+                description: "Developer still holds portion - monitor for further sells"
+            };
+        }
+        
+        // Dev hasn't sold = RISK (potential dump incoming)
+        if (soldPercent < 10) {
+            return {
+                label: "DEV HOLDING",
+                sentiment: "BEARISH",
+                emoji: "🚨",
+                description: "Developer still holds most/all - HIGH RUG RISK"
+            };
+        }
+        
+        // Dev sold small amount
+        return {
+            label: "MINOR SELLS",
+            sentiment: "NEUTRAL",
+            emoji: "⚠️",
+            description: "Developer has taken some profit"
+        };
+    }
+    
+    analyzeSellingPattern(trades) {
+        const sells = trades.filter(t => t.type === 'sell');
+        
+        if (sells.length === 0) {
+            return { type: "NO_SELLS", risk: "HIGH" };
+        }
+        
+        // Check if sold all at once (dump)
+        if (sells.length === 1 && sells,[object Object],percent > 80) {
+            return {
+                type: "DUMP",
+                risk: "NEUTRAL", // Already happened, no future risk
+                description: "Sold most in single transaction"
+            };
+        }
+        
+        // Check timing between sells
+        const timeGaps = [];
+        for (let i = 1; i < sells.length; i++) {
+            const gap = sells[i].timestamp - sells[i-1].timestamp;
+            timeGaps.push(gap);
+        }
+        
+        const avgGap = timeGaps.reduce((a, b) => a + b, 0) / timeGaps.length;
+        
+        // Gradual selling over time = GOOD
+        if (avgGap > 3600) { // More than 1 hour between sells
+            return {
+                type: "GRADUAL",
+                risk: "LOW",
+                description: "Gradual selling over time"
+            };
+        }
+        
+        // Quick successive sells = PANIC/DUMP
+        if (avgGap < 300) { // Less than 5 minutes
+            return {
+                type: "RAPID",
+                risk: "NEUTRAL",
+                description: "Rapid selling pattern"
+            };
+        }
+        
+        return {
+            type: "MODERATE",
+            risk: "LOW",
+            description: "Moderate selling pace"
+        };
+    }
+    
+    assessDevRisk(soldPercent, pattern) {
+        // Key insight: The MORE dev has sold, the LESS risk of future rug
+        
+        if (soldPercent > 95) {
+            return {
+                rug_risk: "NONE",
+                score_impact: +15, // POSITIVE impact on safety score
+                reasoning: "No dev tokens left to dump"
+            };
+        }
+        
+        if (soldPercent > 70) {
+            return {
+                rug_risk: "VERY LOW",
+                score_impact: +10,
+                reasoning: "Most dev tokens already sold"
+            };
+        }
+        
+        if (soldPercent > 50) {
+            return {
+                rug_risk: "LOW",
+                score_impact: +5,
+                reasoning: "Majority of dev tokens sold"
+            };
+        }
+        
+        if (soldPercent > 20) {
+            return {
+                rug_risk: "MEDIUM",
+                score_impact: 0, // Neutral
+                reasoning: "Dev has taken some profit but still holds significant amount"
+            };
+        }
+        
+        if (soldPercent < 10) {
+            return {
+                rug_risk: "HIGH",
+                score_impact: -25, // NEGATIVE impact
+                reasoning: "Dev still holds most/all tokens - HIGH RUG RISK"
+            };
+        }
+        
+        return {
+            rug_risk: "MEDIUM",
+            score_impact: -5,
+            reasoning: "Dev has sold minimal amount"
+        };
+    }
+}
