@@ -1,0 +1,94 @@
+// Main App Component
+import React, { useState } from 'react';
+import './TokenAnalyzer.css';
+
+function TokenAnalyzer() {
+    const [tokenAddress, setTokenAddress] = useState('');
+    const [analysis, setAnalysis] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const analyzeToken = async () => {
+        if (!tokenAddress.trim()) {
+            setError('Please enter a token address');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/analyze/${tokenAddress}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setAnalysis(data);
+            }
+        } catch (err) {
+            setError('Failed to analyze token. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="token-analyzer">
+            {/* Header */}
+            <Header />
+
+            {/* Search Section */}
+            <SearchSection 
+                tokenAddress={tokenAddress}
+                setTokenAddress={setTokenAddress}
+                onAnalyze={analyzeToken}
+                loading={loading}
+            />
+
+            {/* Error Display */}
+            {error && <ErrorMessage message={error} />}
+
+            {/* Loading State */}
+            {loading && <LoadingScreen />}
+
+            {/* Results */}
+            {analysis && !loading && (
+                <div className="analysis-results">
+                    {/* Quick Summary Banner */}
+                    <QuickSummaryBanner analysis={analysis} />
+
+                    {/* Main Content Grid */}
+                    <div className="content-grid">
+                        {/* Left Column - Safety & Metrics */}
+                        <div className="left-column">
+                            <SafetyScoreCard safety={analysis.safety} />
+                            <DeveloperCard developer={analysis.safety.checks.developer} />
+                            <HolderDistribution holders={analysis.safety.checks.holders} />
+                            <ClusterAnalysis clusters={analysis.safety.checks.clusters} />
+                            <LiquidityCard liquidity={analysis.safety.checks.liquidity} />
+                        </div>
+
+                        {/* Right Column - Chart & Technical */}
+                        <div className="right-column">
+                            <PriceChart 
+                                technical={analysis.technical}
+                                entry={analysis.entry}
+                            />
+                            <TechnicalSignals signals={analysis.technical.signals} />
+                            <EntryRecommendation entry={analysis.entry} />
+                        </div>
+                    </div>
+
+                    {/* Full Width Sections */}
+                    <DetailedBreakdown 
+                        safety={analysis.safety}
+                        technical={analysis.technical}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default TokenAnalyzer;
