@@ -1,0 +1,84 @@
+function QuickSummaryBanner({ analysis }) {
+    const { safety, summary } = analysis;
+    const rating = safety.rating;
+
+    return (
+        <div className={`summary-banner ${rating.color}`}>
+            <div className="banner-content">
+                <div className="verdict-section">
+                    <span className="emoji-large">{rating.emoji}</span>
+                    <div className="verdict-text">
+                        <h2>{summary.verdict}</h2>
+                        <p>{rating.description}</p>
+                    </div>
+                </div>
+
+                <div className="score-section">
+                    <div className="score-circle">
+                        <svg viewBox="0 0 100 100">
+                            <circle 
+                                cx="50" 
+                                cy="50" 
+                                r="45" 
+                                fill="none" 
+                                stroke="#e0e0e0" 
+                                strokeWidth="10"
+                            />
+                            <circle 
+                                cx="50" 
+                                cy="50" 
+                                r="45" 
+                                fill="none" 
+                                stroke={this.getScoreColor(safety.score)}
+                                strokeWidth="10"
+                                strokeDasharray={`${safety.score * 2.827} 282.7`}
+                                transform="rotate(-90 50 50)"
+                            />
+                        </svg>
+                        <div className="score-number">
+                            <span className="score-value">{safety.score}</span>
+                            <span className="score-max">/100</span>
+                        </div>
+                    </div>
+                    <div className="score-label">Safety Score</div>
+                </div>
+
+                <div className="quick-stats">
+                    <div className="stat">
+                        <span className="stat-label">Holders</span>
+                        <span className="stat-value">
+                            {analysis.safety.checks.holders.total_holders}
+                        </span>
+                    </div>
+                    <div className="stat">
+                        <span className="stat-label">Liquidity</span>
+                        <span className="stat-value">
+                            ${(analysis.safety.checks.liquidity.liquidity_usd / 1000).toFixed(1)}k
+                        </span>
+                    </div>
+                    <div className="stat">
+                        <span className="stat-label">24h Volume</span>
+                        <span className="stat-value">
+                            ${(analysis.safety.checks.trading.volume_24h / 1000).toFixed(1)}k
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="key-points">
+                {summary.key_points.map((point, idx) => (
+                    <div key={idx} className="key-point">
+                        {point}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    getScoreColor(score) {
+        if (score >= 80) return '#10b981'; // green
+        if (score >= 60) return '#fbbf24'; // yellow
+        if (score >= 40) return '#f97316'; // orange
+        return '#ef4444'; // red
+    }
+}
