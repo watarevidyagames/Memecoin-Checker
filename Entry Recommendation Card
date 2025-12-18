@@ -1,0 +1,165 @@
+function EntryRecommendation({ entry }) {
+    const { current_action, best_entry, recommended_entries, risk_management } = entry;
+
+    if (current_action.action === "NO ENTRY") {
+        return (
+            <div className="card entry-card no-entry">
+                <div className="card-header">
+                    <h3>🚫 Entry Recommendation</h3>
+                </div>
+                <div className="card-body">
+                    <div className="no-entry-message">
+                        <span className="warning-icon">⚠️</span>
+                        <h4>No Entry Recommended</h4>
+                        <p>{current_action.reason}</p>
+                        <p className="alternatives">{current_action.alternatives}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="card entry-card">
+            <div className="card-header">
+                <h3>🎯 Entry Recommendation</h3>
+                <span className={`action-badge ${current_action.action.toLowerCase().replace(' ', '-')}`}>
+                    {current_action.action}
+                </span>
+            </div>
+
+            <div className="card-body">
+                {/* Current Action */}
+                <div className="current-action">
+                    <div className="action-header">
+                        <span className="confidence-badge">{current_action.confidence} Confidence</span>
+                    </div>
+                    <p className="action-reasoning">{current_action.reasoning}</p>
+                    {current_action.target_price && (
+                        <div className="target-price">
+                            <span>Target Entry Price:</span>
+                            <span className="price-value">${current_action.target_price.toFixed(8)}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Best Entry Setup */}
+                {best_entry && (
+                    <div className="best-entry">
+                        <h4>🎯 Best Entry Setup</h4>
+                        <div className="entry-details">
+                            <div className="entry-row">
+                                <span className="entry-label">Type:</span>
+                                <span className="entry-value">
+                                    {best_entry.type.replace(/_/g, ' ')}
+                                </span>
+                            </div>
+                            <div className="entry-row">
+                                <span className="entry-label">Strategy:</span>
+                                <span className="entry-value">{best_entry.strategy}</span>
+                            </div>
+                            <div className="entry-row">
+                                <span className="entry-label">Entry Price:</span>
+                                <span className="entry-value price">
+                                    {best_entry.price === 'CURRENT' ? 
+                                        'Market Price' : 
+                                        `$${best_entry.price.toFixed(8)}`
+                                    }
+                                </span>
+                            </div>
+                            <div className="entry-row">
+                                <span className="entry-label">Stop Loss:</span>
+                                <span className="entry-value stop-loss">
+                                    ${best_entry.stop_loss.toFixed(8)}
+                                </span>
+                            </div>
+                            <div className="entry-row">
+                                <span className="entry-label">Take Profit:</span>
+                                <div className="tp-levels">
+                                    {best_entry.take_profit.map((tp, idx) => (
+                                        <span key={idx} className="tp-level">
+                                            TP{idx + 1}: ${tp.toFixed(8)}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="entry-reasoning">
+                            <strong>Why:</strong> {best_entry.reasoning}
+                        </div>
+                    </div>
+                )}
+
+                {/* Risk Management */}
+                {risk_management && (
+                    <div className="risk-management">
+                        <h4>⚠️ Risk Management</h4>
+                        
+                        <div className="position-sizing">
+                            <span className="section-label">Position Sizing:</span>
+                            <div className="sizing-options">
+                                <div className="sizing-option">
+                                    <span className="option-label">Conservative:</span>
+                                    <span className="option-value">{risk_management.position_sizing.conservative}</span>
+                                </div>
+                                <div className="sizing-option">
+                                    <span className="option-label">Moderate:</span>
+                                    <span className="option-value">{risk_management.position_sizing.moderate}</span>
+                                </div>
+                                <div className="sizing-option">
+                                    <span className="option-label">Aggressive:</span>
+                                    <span className="option-value">{risk_management.position_sizing.aggressive}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="tp-strategy">
+                            <span className="section-label">Take Profit Strategy:</span>
+                            <div className="tp-grid">
+                                {Object.entries(risk_management.take_profit_strategy).map(([key, tp]) => (
+                                    <div key={key} className="tp-item">
+                                        <span className="tp-name">{key.toUpperCase()}</span>
+                                        <span className="tp-price">${tp.price.toFixed(8)}</span>
+                                        <span className="tp-sell">Sell {tp.sell}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="additional-notes">
+                            <p>💡 {risk_management.trailing_stop}</p>
+                            <p>⏰ {risk_management.max_hold_time}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Alternative Entry Points */}
+                {recommended_entries.length > 1 && (
+                    <div className="alternative-entries">
+                        <h4>Alternative Entry Points</h4>
+                        <div className="entries-list">
+                            {recommended_entries.slice(1, 4).map((entry, idx) => (
+                                <div key={idx} className="alt-entry">
+                                    <div className="alt-entry-header">
+                                        <span className="alt-entry-type">
+                                            {entry.type.replace(/_/g, ' ')}
+                                        </span>
+                                        <span className={`alt-entry-confidence ${entry.confidence.toLowerCase()}`}>
+                                            {entry.confidence}
+                                        </span>
+                                    </div>
+                                    <div className="alt-entry-price">
+                                        Entry: {entry.price === 'CURRENT' ? 
+                                            'Market' : 
+                                            `$${entry.price.toFixed(8)}`
+                                        }
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
