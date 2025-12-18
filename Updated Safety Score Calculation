@@ -1,0 +1,292 @@
+calculateSafetyScore(checks) {
+    let score = 100;
+    const deductions = [];
+    
+    // ===== DEVELOPER ANALYSIS (REVISED) =====
+    const devRisk = checks.developer.risk_assessment;
+    
+    if (devRisk.score_impact !== 0) {
+        score += devRisk.score_impact; // Can be positive or negative
+        
+        deductions.push({
+            reason: checks.developer.status.description,
+            points: devRisk.score_impact,
+            severity: devRisk.score_impact > 0 ? "POSITIVE" : "NEGATIVE",
+            category: "DEVELOPER"
+        });
+    }
+    
+    // Additional dev checks - selling pattern
+    if (checks.developer.selling_pattern.type === "DUMP" && 
+        checks.developer.sold_percent > 90) {
+        // Quick dump but dev is out = slightly concerning but no future risk
+        deductions.push({
+            reason: "Dev dumped tokens quickly (but now out)",
+            points: -5,
+            severity: "LOW",
+            category: "DEVELOPER"
+        });
+        score -= 5;
+    }
+    
+    // ===== HOLDER CONCENTRATION =====
+    if (checks.holders.top_10_percent > 60) {
+        score -= 25;
+        deductions.push({
+            reason: "Top 10 holders control >60%",
+            points: -25,
+            severity: "HIGH",
+            category: "HOLDERS"
+        });
+    } else if (checks.holders.top_10_percent > 40) {
+        score -= 15;
+        deductions.push({
+            reason: "Top 10 holders control >40%",
+            points: -15,
+            severity: "MEDIUM",
+            category: "HOLDERS"
+        });
+    } else if (checks.holders.top_10_percent < 30) {
+        score += 5;
+        deductions.push({
+            reason: "Well-distributed holdings (<30% in top 10)",
+            points: +5,
+            severity: "POSITIVE",
+            category: "HOLDERS"
+        });
+    }
+    
+    // ===== WALLET CLUSTERS =====
+    if (checks.clusters.suspicious_clusters > 0) {
+        const clusterHoldings = checks.clusters.total_cluster_percent;
+        if (clusterHoldings > 30) {
+            score -= 30;
+            deductions.push({
+                reason: `Insider clusters control ${clusterHoldings.toFixed(1)}%`,
+                points: -30,
+                severity: "CRITICAL",
+                category: "CLUSTERS"
+            });
+        } else if (clusterHoldings > 15) {
+            score -= 15;
+            deductions.push({
+                reason: `Insider clusters control ${clusterHoldings.toFixed(1)}%`,
+                points: -15,
+                severity: "MEDIUM",
+                category: "CLUSTERS"
+            });
+        } else {
+            score -= 5;
+            deductions.push({
+                reason: `Minor cluster detected (${clusterHoldings.toFixed(1)}%)`,
+                points: -5,
+                severity: "LOW",
+                category: "CLUSTERS"
+            });
+        }
+    }
+    
+    // ===== BUNDLED LAUNCH =====
+    if (checks.trading.bundled_launch) {
+        score -= 35;
+        deductions.push({
+            reason: "Bundled launch detected",
+            points: -35,
+            severity: "CRITICAL",
+            category: "LAUNCH"
+        });
+    }
+    
+    // ===== HOLDER COUNT =====
+    if (checks.holders.total_holders < 50) {
+        score -= 15;
+        deductions.push({
+            reason: "Very few holders (<50)",
+            points: -15,
+            severity: "MEDIUM",
+            category: "HOLDERS"
+        });
+    } else if (checks.holders.total_holders > 500) {
+        score += 5;
+        deductions.push({
+            reason: "Large holder base (>500)",
+            points: +5,
+            severity: "POSITIVE",
+            category: "HOLDERS"
+        });
+    }
+    
+    // ===== CEX FUNDING RATIO =====
+    const cexRatio = checks.holders.cex_funded_percent;
+    if (cexRatio > 60) {
+        score += 10;
+        deductions.push({
+            reason: `High CEX-funded ratio (${cexRatio.toFixed(1)}% - organic)`,
+            points: +10,
+            severity: "POSITIVE",
+            category: "DISTRIBUTION"
+        });
+    } else if (cexRatio < 30) {
+        score -= 10;
+        deductions.push({
+            reason: `Low CEX-funded ratio (${cexRatio.toFixed(1)}%)`,
+            points: -10,
+            severity: "LOW",
+            category: "DISTRIBUTION"
+        });
+    }
+    
+    // ===== LIQUIDITY =====
+    if (checks.liquidity.raydium_lp_burned) {
+        score += 15;
+        deductions.push({
+            reason: "Raydium LP burned (liquidity locked)",
+            points: +15,
+            severity: "POSITIVE",
+            category: "LIQUIDITY"
+        });
+    } else if (checks.liquidity.is_graduated && !checks.liquidity.raydium_lp_burned) {
+        score -= 20;
+        deductions.push({
+            reason: "Graduated but LP not burned",
+            points: -20,
+            severity: "HIGH",
+            category: "LIQUIDITY"
+        });
+    }
+    
+    // Check liquidity amount
+    if (checks.liquidity.liquidity_usd < 10000) {
+        score -= 15;
+        deductions.push({
+            reason: "Low liquidity (<$10k)",
+            points: -15,
+            severity: "MEDIUM",
+            category: "LIQUIDITY"
+        });
+    } else if (checks.liquidity.liquidity_usd > 50000) {
+        score += 5;
+        deductions.push({
+            reason: "Strong liquidity (>$50k)",
+            points: +5,
+            severity: "POSITIVE",
+            category: "LIQUIDITY"
+        });
+    }
+    
+    // ===== WASH TRADING =====
+    if (checks.trading.wash_trading_score > 0.7) {
+        score -= 25;
+        deductions.push({
+            reason: "High wash trading detected",
+            points: -25,
+            severity: "HIGH",
+            category: "TRADING"
+        });
+    } else if (checks.trading.wash_trading_score > 0.4) {
+        score -= 10;
+        deductions.push({
+            reason: "Moderate wash trading detected",
+            points: -10,
+            severity: "MEDIUM",
+            category: "TRADING"
+        });
+    }
+    
+    // ===== VOLUME ANALYSIS =====
+    const volumeToMcapRatio = checks.trading.volume_24h / checks.token_info.market_cap;
+    if (volumeToMcapRatio > 2) {
+        score += 5;
+        deductions.push({
+            reason: "High trading volume (healthy activity)",
+            points: +5,
+            severity: "POSITIVE",
+            category: "TRADING"
+        });
+    } else if (volumeToMcapRatio < 0.1) {
+        score -= 10;
+        deductions.push({
+            reason: "Very low trading volume",
+            points: -10,
+            severity: "MEDIUM",
+            category: "TRADING"
+        });
+    }
+    
+    // ===== TOKEN AGE =====
+    const ageInHours = (Date.now() - checks.token_info.created_at) / (1000 * 60 * 60);
+    if (ageInHours < 1) {
+        score -= 10;
+        deductions.push({
+            reason: "Very new token (<1 hour old)",
+            points: -10,
+            severity: "MEDIUM",
+            category: "AGE"
+        });
+    } else if (ageInHours > 168) { // 7 days
+        score += 5;
+        deductions.push({
+            reason: "Established token (>7 days old)",
+            points: +5,
+            severity: "POSITIVE",
+            category: "AGE"
+        });
+    }
+    
+    return {
+        final_score: Math.max(0, Math.min(100, score)),
+        deductions,
+        rating: this.getRating(score),
+        breakdown: this.categorizeDeductions(deductions)
+    };
+}
+
+categorizeDeductions(deductions) {
+    const categories = {};
+    
+    deductions.forEach(d => {
+        if (!categories[d.category]) {
+            categories[d.category] = {
+                total_impact: 0,
+                items: []
+            };
+        }
+        categories[d.category].total_impact += d.points;
+        categories[d.category].items.push(d);
+    });
+    
+    return categories;
+}
+
+getRating(score) {
+    if (score >= 85) return { 
+        level: "VERY LOW RISK", 
+        color: "darkgreen", 
+        emoji: "✅",
+        description: "Strong safety metrics across the board"
+    };
+    if (score >= 70) return { 
+        level: "LOW RISK", 
+        color: "green", 
+        emoji: "✅",
+        description: "Good safety profile with minor concerns"
+    };
+    if (score >= 55) return { 
+        level: "MEDIUM RISK", 
+        color: "yellow", 
+        emoji: "⚠️",
+        description: "Acceptable risk for experienced traders"
+    };
+    if (score >= 40) return { 
+        level: "HIGH RISK", 
+        color: "orange", 
+        emoji: "⚠️",
+        description: "Significant red flags present"
+    };
+    return { 
+        level: "EXTREME RISK", 
+        color: "red", 
+        emoji: "🚨",
+        description: "Multiple critical issues detected"
+    };
+}
