@@ -1,0 +1,32 @@
+function LoadingScreen() {
+    return (
+        <div className="loading-screen">
+            <div className="loading-content">
+                <div className="loading-spinner-large"></div>
+                <h3>Analyzing Token...</h3>
+                <div className="loading-steps">
+                    <div className="loading-step active">
+                        <span className="step-icon">✓</span>
+                        <span>Fetching token data</span>
+                    </div>
+                    <div className="loading-step active">
+                        <span className="step-icon">⟳</span>
+                        <span>Analyzing holders</span>
+                    </div>
+                    <div className="loading-step">
+                        <span className="step-icon">○</span>
+                        <span>Detecting clusters</span>
+                    </div>
+                    <div className="loading-step">
+                        <span className="step-icon">○</span>
+                        <span>Calculating technical indicators</span>
+                    </div>
+                    <div className="loading-step">
+                        <span className="step-icon">○</span>
+                        <span>Finding entry points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
